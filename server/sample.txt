@@ -1,0 +1,25 @@
+package main
+
+type question struct {
+	q string
+	t int
+}
+
+func main() {
+	println("Hello, World!")
+	q := question{
+		q: "idk",
+	}
+
+	Smth(q)
+}
+
+func smth(input string) {
+	printf("smth!, %s\n", input)
+}
+
+func Smth(input question) {
+	smth(input.q)
+
+	smth("else")
+}
