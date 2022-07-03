@@ -6,20 +6,43 @@ import (
 	"go/parser"
 	"go/token"
 	"io/ioutil"
+	"os"
 	"strings"
 )
 
 var appContext string
 var tracingCall string
 
+// go build && ./tracer ./server/serve.go,./server/sample.txt
 func main() {
-	filepath := "./server/serve.go" // or "./server/sample.txt"
-	fset, f := astForFile(filepath) // positions are relative to fset
+	changedFiles := getFilepathsFromArgs()
+	for _, f := range changedFiles {
+		checkFileForTracing(f)
+	}
+}
 
-	// TODO: traverse directories
+func getFilepathsFromArgs() []string {
+	allChangedFiles := ""
+
+	args := os.Args
+	if len(args) > 1 {
+		allChangedFiles = args[1]
+	}
+
+	filepaths := strings.Split(allChangedFiles, ",")
+	return filepaths
+}
+
+func checkFileForTracing(filepath string) {
+	if filepath == "" {
+		return
+	}
+
+	fset, f := astForFile(filepath) // positions are relative to fset
 
 	// TODO: also handle methods
 
+	// TODO: let the tracing pattern be configurable for nested contextts
 	appContext = "echo.Context"
 	tracingCall = "trace"
 
@@ -32,6 +55,10 @@ func main() {
 }
 
 func astForFile(filepath string) (*token.FileSet, *ast.File) {
+	if filepath == "" {
+		return nil, nil
+	}
+
 	src := fileToText(filepath)
 
 	fset := token.NewFileSet()
